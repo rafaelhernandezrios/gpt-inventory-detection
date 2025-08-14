@@ -11,8 +11,8 @@
 
 ```bash
 # 1. Clonar el repositorio
-git clone https://github.com/tu-usuario/gpt-image-recognition.git
-cd gpt-image-recognition
+git clone https://github.com/rafaelhernandezrios/gpt-inventory-detection.git
+cd gpt-inventory-detection
 
 # 2. Instalar dependencias
 pip install -r requirements.txt
