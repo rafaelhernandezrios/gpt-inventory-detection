@@ -1,4 +1,48 @@
-# 🔍 Reconocimiento de Latas y Botellas con GPT Vision
+# 🔍 GPT Image Recognition - Contador de Latas y Botellas
+
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Flask](https://img.shields.io/badge/Flask-2.3+-green.svg)](https://flask.palletsprojects.com/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT%20Vision-orange.svg)](https://openai.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+**Reconocimiento de Latas y Botellas con GPT Vision / Can and Bottle Recognition with GPT Vision**
+
+## 🚀 Quick Start
+
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/tu-usuario/gpt-image-recognition.git
+cd gpt-image-recognition
+
+# 2. Instalar dependencias
+pip install -r requirements.txt
+
+# 3. Configurar API Key
+cp env_example.txt .env
+# Edita .env y agrega tu API Key de OpenAI
+
+# 4. Ejecutar la aplicación
+python app.py
+```
+
+**🌐 Abre:** http://localhost:5000
+
+## 📑 Tabla de Contenido / Table of Contents
+
+- [🚀 Quick Start](#-quick-start)
+- [📋 Descripción](#-descripción--description)
+- [🚀 Características](#-características--features)
+- [🛠️ Instalación](#️-instalación--installation)
+- [📖 Uso](#-uso--usage)
+- [🌐 Acceso desde otros dispositivos](#-acceso-desde-otros-dispositivos--access-from-other-devices)
+- [📷 Opciones para Acceso a Cámara](#-opciones-para-acceso-a-cámara--camera-access-options)
+- [🏗️ Estructura del Proyecto](#️-estructura-del-proyecto--project-structure)
+- [🔧 Configuración Avanzada](#-configuración-avanzada--advanced-configuration)
+- [🔒 Seguridad](#-seguridad--security)
+- [🐛 Solución de Problemas](#-solución-de-problemas--troubleshooting)
+- [📱 Compatibilidad](#-compatibilidad--compatibility)
+- [🤝 Contribuir](#-contribuir--contributing)
+- [📄 Licencia](#-licencia--license)
 
 ## 📋 Descripción / Description
 
@@ -292,5 +336,3 @@ This project is under the MIT License. See the `LICENSE` file for more details.
 ---
 
 **¡Disfruta usando la aplicación! / Enjoy using the application!** 🎉
-#   g p t - i n v e n t o r y - d e t e c t i o n  
- 
