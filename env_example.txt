@@ -1,0 +1,13 @@
+# OpenAI API Configuration
+# Obtén tu API Key en: https://platform.openai.com/api-keys
+# Get your API Key at: https://platform.openai.com/api-keys
+OPENAI_API_KEY=sk-your-openai-api-key-here
+
+# Flask Configuration
+FLASK_ENV=development
+FLASK_DEBUG=1
+
+# Application Configuration (optional)
+# HOST=127.0.0.1
+# PORT=5000
+# SECRET_KEY=your-secret-key-here

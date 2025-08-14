@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reconocimiento de Latas y Botellas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .camera-section {
+            margin-bottom: 30px;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 3px solid #e0e0e0;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .result-value {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .description {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            font-style: italic;
+            color: #666;
+        }
+
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #c62828;
+        }
+
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Reconocimiento de Latas y Botellas</h1>
+        
+        <div class="camera-section">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+            
+            <div class="button-group">
+                <button class="btn btn-secondary" id="startCamera">📷 Iniciar Cámara</button>
+                <button class="btn btn-primary" id="capturePhoto" disabled>📸 Tomar Foto</button>
+                <button class="btn btn-secondary" id="retakePhoto" style="display: none;">🔄 Nueva Foto</button>
+            </div>
+            
+            <div class="compatibility-info" style="margin-top: 20px; padding: 15px; background: #f0f8ff; border-radius: 10px; font-size: 14px; color: #666;">
+                <strong>💡 Información de Compatibilidad:</strong><br>
+                • Navegadores soportados: Chrome 60+, Firefox 55+, Safari 11+, Edge 79+<br>
+                • La cámara requiere permisos del navegador<br>
+                • En producción, se requiere HTTPS para acceso a la cámara
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analizando imagen...</p>
+        </div>
+
+        <div class="results" id="results">
+            <h2>📊 Resultados del Análisis</h2>
+            <div class="result-item">
+                <span class="result-label">🥫 Latas:</span>
+                <span class="result-value" id="latasCount">0</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">🍾 Botellas:</span>
+                <span class="result-value" id="botellasCount">0</span>
+            </div>
+            <div class="description" id="description">
+                Descripción de la imagen...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let stream = null;
+        let capturedImage = null;
+
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const startButton = document.getElementById('startCamera');
+        const captureButton = document.getElementById('capturePhoto');
+        const retakeButton = document.getElementById('retakePhoto');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+
+        // Check browser compatibility on page load
+        window.addEventListener('load', () => {
+            checkBrowserCompatibility();
+        });
+
+        function checkBrowserCompatibility() {
+            // Check if getUserMedia is supported
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                // Fallback for older browsers
+                navigator.mediaDevices = {};
+                navigator.mediaDevices.getUserMedia = function(constraints) {
+                    const getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+                    
+                    if (!getUserMedia) {
+                        showStatus('❌ Tu navegador no soporta acceso a la cámara. Usa Chrome, Firefox o Safari.', 'error');
+                        startButton.disabled = true;
+                        return Promise.reject(new Error('getUserMedia not supported'));
+                    }
+                    
+                    return new Promise(function(resolve, reject) {
+                        getUserMedia.call(navigator, constraints, resolve, reject);
+                    });
+                };
+            }
+
+            // Check if running on secure context
+            if (!window.isSecureContext && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                showStatus('⚠️ La cámara requiere HTTPS en producción. Ejecutando en modo local.', 'error');
+            }
+        }
+
+        // Start camera
+        startButton.addEventListener('click', async () => {
+            try {
+                // Check if getUserMedia is supported
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error('Tu navegador no soporta acceso a la cámara. Intenta con Chrome, Firefox o Safari.');
+                }
+
+                // Check if running on HTTPS (required for camera access)
+                if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                    showStatus('⚠️ La cámara requiere HTTPS en producción. Ejecutando en modo local.', 'error');
+                }
+
+                const constraints = {
+                    video: {
+                        width: { ideal: 1280, max: 1920 },
+                        height: { ideal: 720, max: 1080 },
+                        facingMode: 'environment'
+                    }
+                };
+
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+                
+                // Wait for video to be ready
+                video.onloadedmetadata = () => {
+                    captureButton.disabled = false;
+                    startButton.disabled = true;
+                    showStatus('Cámara iniciada correctamente', 'success');
+                };
+
+                video.onerror = () => {
+                    throw new Error('Error al cargar el video de la cámara');
+                };
+
+            } catch (err) {
+                console.error('Camera error:', err);
+                let errorMessage = 'Error al acceder a la cámara: ';
+                
+                if (err.name === 'NotAllowedError') {
+                    errorMessage += 'Permiso denegado. Por favor, permite el acceso a la cámara.';
+                } else if (err.name === 'NotFoundError') {
+                    errorMessage += 'No se encontró ninguna cámara en tu dispositivo.';
+                } else if (err.name === 'NotSupportedError') {
+                    errorMessage += 'Tu navegador no soporta esta funcionalidad.';
+                } else if (err.name === 'NotReadableError') {
+                    errorMessage += 'La cámara está siendo usada por otra aplicación.';
+                } else {
+                    errorMessage += err.message;
+                }
+                
+                showStatus(errorMessage, 'error');
+            }
+        });
+
+        // Capture photo
+        captureButton.addEventListener('click', () => {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0);
+            
+            capturedImage = canvas.toDataURL('image/jpeg', 0.8);
+            video.style.display = 'none';
+            retakeButton.style.display = 'inline-block';
+            captureButton.style.display = 'none';
+            
+            analyzeImage();
+        });
+
+        // Retake photo
+        retakeButton.addEventListener('click', () => {
+            video.style.display = 'block';
+            retakeButton.style.display = 'none';
+            captureButton.style.display = 'inline-block';
+            results.classList.remove('show');
+            capturedImage = null;
+        });
+
+        async function analyzeImage() {
+            if (!capturedImage) return;
+
+            loading.style.display = 'block';
+            results.classList.remove('show');
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        image: capturedImage
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    showStatus('Error: ' + data.descripcion, 'error');
+                    return;
+                }
+
+                // Display results
+                document.getElementById('latasCount').textContent = data.latas || 0;
+                document.getElementById('botellasCount').textContent = data.botellas || 0;
+                document.getElementById('description').textContent = data.descripcion || 'Sin descripción disponible';
+
+                results.classList.add('show');
+                showStatus('Análisis completado exitosamente', 'success');
+
+            } catch (error) {
+                showStatus('Error al analizar la imagen: ' + error.message, 'error');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function showStatus(message, type) {
+            // Remove existing status messages
+            const existingStatus = document.querySelector('.status');
+            if (existingStatus) {
+                existingStatus.remove();
+            }
+
+            const status = document.createElement('div');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(status, container.firstChild);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (status.parentNode) {
+                    status.remove();
+                }
+            }, 5000);
+        }
+
+        // Clean up when page is unloaded
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+    </script>
+</body>
+</html>

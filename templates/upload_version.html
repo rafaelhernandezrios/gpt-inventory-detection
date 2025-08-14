@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reconocimiento de Latas y Botellas - Subida de Archivos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .file-upload input[type=file] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px 20px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f0f0;
+        }
+
+        .upload-area.dragover {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .result-value {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .description {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            font-style: italic;
+            color: #666;
+        }
+
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+
+        .compatibility-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Reconocimiento de Latas y Botellas</h1>
+        <p style="color: #666; margin-bottom: 30px;">Versión con subida de archivos - No requiere cámara</p>
+        
+        <div class="upload-section">
+            <div class="file-upload">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Arrastra una imagen aquí o haz clic para seleccionar</div>
+                    <div class="upload-hint">Formatos soportados: JPG, PNG, GIF (máx. 10MB)</div>
+                </div>
+                <input type="file" id="fileInput" accept="image/*" />
+            </div>
+            
+            <img id="previewImage" class="preview-image" alt="Vista previa" />
+            
+            <div class="button-group">
+                <button class="btn btn-primary" id="analyzeBtn" disabled>🤖 Analizar Imagen</button>
+                <button class="btn btn-secondary" id="clearBtn" style="display: none;">🔄 Nueva Imagen</button>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analizando imagen...</p>
+        </div>
+
+        <div class="results" id="results">
+            <h2>📊 Resultados del Análisis</h2>
+            <div class="result-item">
+                <span class="result-label">🥫 Latas:</span>
+                <span class="result-value" id="latasCount">0</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">🍾 Botellas:</span>
+                <span class="result-value" id="botellasCount">0</span>
+            </div>
+            <div class="description" id="description">
+                Descripción de la imagen...
+            </div>
+        </div>
+
+        <div class="compatibility-info">
+            <strong>💡 Ventajas de esta versión:</strong><br>
+            • No requiere permisos de cámara<br>
+            • Funciona en cualquier navegador<br>
+            • No necesita HTTPS<br>
+            • Puedes usar imágenes guardadas en tu dispositivo
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const previewImage = document.getElementById('previewImage');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+
+        // File input change
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        });
+
+        // Click to select
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showStatus('Por favor selecciona un archivo de imagen válido', 'error');
+                return;
+            }
+
+            // Validate file size (10MB max)
+            if (file.size > 10 * 1024 * 1024) {
+                showStatus('El archivo es demasiado grande. Máximo 10MB', 'error');
+                return;
+            }
+
+            selectedFile = file;
+            
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+                analyzeBtn.disabled = false;
+                clearBtn.style.display = 'inline-block';
+            };
+            reader.readAsDataURL(file);
+
+            showStatus('Imagen seleccionada correctamente', 'success');
+        }
+
+        // Analyze button
+        analyzeBtn.addEventListener('click', () => {
+            if (!selectedFile) return;
+            analyzeImage();
+        });
+
+        // Clear button
+        clearBtn.addEventListener('click', () => {
+            fileInput.value = '';
+            previewImage.style.display = 'none';
+            analyzeBtn.disabled = true;
+            clearBtn.style.display = 'none';
+            results.classList.remove('show');
+            selectedFile = null;
+            showStatus('Imagen eliminada', 'success');
+        });
+
+        async function analyzeImage() {
+            if (!selectedFile) return;
+
+            loading.style.display = 'block';
+            results.classList.remove('show');
+
+            try {
+                // Convert file to base64
+                const base64 = await fileToBase64(selectedFile);
+                
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        image: base64
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    showStatus('Error: ' + data.descripcion, 'error');
+                    return;
+                }
+
+                // Display results
+                document.getElementById('latasCount').textContent = data.latas || 0;
+                document.getElementById('botellasCount').textContent = data.botellas || 0;
+                document.getElementById('description').textContent = data.descripcion || 'Sin descripción disponible';
+
+                results.classList.add('show');
+                showStatus('Análisis completado exitosamente', 'success');
+
+            } catch (error) {
+                showStatus('Error al analizar la imagen: ' + error.message, 'error');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function showStatus(message, type) {
+            // Remove existing status messages
+            const existingStatus = document.querySelector('.status');
+            if (existingStatus) {
+                existingStatus.remove();
+            }
+
+            const status = document.createElement('div');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(status, container.firstChild);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (status.parentNode) {
+                    status.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
